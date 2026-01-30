@@ -91,8 +91,43 @@ const InfoSection: React.FC<SectionData> = ({ items }) => {
 
   return (
     <div className="w-full">
-      {/* --- 모바일 레이아웃 --- */}
-      <div className="block md:hidden bg-white w-full">
+      {/* --- 인쇄 전용 레이아웃 (A4 가로 최적화) --- */}
+      <div className="hidden print:block w-full bg-white">
+        {items.map((item, idx) => (
+          <div key={idx} className="page-break flex flex-row items-center justify-between px-20 gap-20">
+            {/* 좌측: 텍스트 영역 (50%) */}
+            <div className="w-1/2 flex flex-col justify-center">
+              <div className="text-[#004a99] font-black text-xs tracking-widest uppercase mb-4">Section {(idx + 1).toString().padStart(2, '0')}</div>
+              <h2 className="text-5xl font-bold text-gray-900 leading-tight mb-8 whitespace-pre-line">           
+                {item.title}
+              </h2>
+              <div className="w-16 h-[3px] bg-[#004a99] mb-8"></div>
+              <p className="text-xl text-[#333333] leading-relaxed font-normal whitespace-pre-line">
+                {item.description}
+              </p>
+            </div>
+
+            {/* 우측: 이미지 영역 (50%) */}
+            <div className="w-1/2 flex items-center justify-center">
+              <div className="relative w-[300px] aspect-[9/19] bg-white rounded-[3rem] border-[8px] border-black overflow-hidden flex flex-col print-phone-frame">
+                <div className="relative z-30 w-full shrink-0">
+                  <img src={STATUS_BAR_URL} alt="status bar" className="w-full h-auto block bg-white" />
+                </div>
+                <div className="relative flex-1 w-full bg-gray-50 overflow-hidden">
+                   <img 
+                      src={item.images[0]} 
+                      alt={`${item.title}`} 
+                      className="w-full h-full object-cover object-top" 
+                    />
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* --- 웹 모바일 레이아웃 --- */}
+      <div className="block md:hidden print:hidden bg-white w-full">
         {items.map((item, idx) => (
           <div key={idx} className="px-6 py-12 border-b border-gray-50 last:border-0 flex flex-col gap-8">
             <div className="w-full">
@@ -107,8 +142,8 @@ const InfoSection: React.FC<SectionData> = ({ items }) => {
             </div>
 
             <div className="flex flex-col items-center w-full">
-              <div className="relative w-full max-w-[260px] aspect-[9/19] bg-white rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.08)] border-[6px] border-black overflow-hidden flex flex-col print-phone-frame">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-4 bg-black rounded-b-2xl z-40 no-print"></div>
+              <div className="relative w-full max-w-[260px] aspect-[9/19] bg-white rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.08)] border-[6px] border-black overflow-hidden flex flex-col">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-4 bg-black rounded-b-2xl z-40"></div>
                 <div className="relative z-30 w-full shrink-0">
                   <img src={STATUS_BAR_URL} alt="status bar" className="w-full h-auto block bg-white" />
                 </div>
@@ -134,7 +169,7 @@ const InfoSection: React.FC<SectionData> = ({ items }) => {
               </div>
               
               {item.images.length > 1 && (
-                <div className="flex items-center gap-6 mt-6 bg-gray-50/80 px-4 py-2 rounded-full border border-gray-100 no-print">
+                <div className="flex items-center gap-6 mt-6 bg-gray-50/80 px-4 py-2 rounded-full border border-gray-100">
                   <button onClick={(e) => handlePrevSubImage(e, idx)} disabled={subImageIndices[idx] === 0} className="p-1 disabled:opacity-10">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
                   </button>
@@ -149,20 +184,20 @@ const InfoSection: React.FC<SectionData> = ({ items }) => {
         ))}
       </div>
 
-      {/* --- 데스크톱 레이아웃 --- */}
+      {/* --- 웹 데스크톱 레이아웃 --- */}
       <div 
         ref={containerRef}
-        className="hidden md:block relative w-full print-linear"
+        className="hidden md:block print:hidden relative w-full"
         style={{ height: `${items.length * 100}vh` }}
       >
-        <div className="sticky top-0 h-screen w-full flex flex-row items-center justify-center gap-20 lg:gap-64 overflow-hidden max-w-7xl mx-auto px-12 print-linear">
-          {/* Left: Text Area (Width constrained to 400px) */}
-          <div className="w-[400px] shrink-0 flex items-center h-full print-linear">
-            <div className="relative w-full print-linear">
+        <div className="sticky top-0 h-screen w-full flex flex-row items-center justify-center gap-20 lg:gap-64 overflow-hidden max-w-7xl mx-auto px-12">
+          {/* Left: Text Area */}
+          <div className="w-[400px] shrink-0 flex items-center h-full">
+            <div className="relative w-full">
               {items.map((item, idx) => (
                 <div
                   key={idx}
-                  className={`transition-all duration-1000 cubic-bezier(0.4, 0, 0.2, 1) w-full print-section ${
+                  className={`transition-all duration-1000 cubic-bezier(0.4, 0, 0.2, 1) w-full ${
                     idx === activeItemIndex 
                       ? 'opacity-100 visible translate-y-0 relative z-10' 
                       : 'opacity-0 invisible absolute top-0 translate-y-12 z-0'
@@ -172,33 +207,17 @@ const InfoSection: React.FC<SectionData> = ({ items }) => {
                   <h2 className="text-4xl lg:text-5xl font-semibold !leading-tight text-gray-900 mb-6 whitespace-pre-line">
                     {item.title}
                   </h2>
-                  <div className={`w-12 h-[3px] bg-[#004a99] mb-8 transition-all duration-700 delay-100 no-print ${idx === activeItemIndex ? 'w-12 opacity-100' : 'w-0 opacity-0'}`}></div>
+                  <div className={`w-12 h-[3px] bg-[#004a99] mb-8 transition-all duration-700 delay-100 ${idx === activeItemIndex ? 'w-12 opacity-100' : 'w-0 opacity-0'}`}></div>
                   <p className="text-xl text-gray-800 leading-relaxed font-normal whitespace-pre-line">
                     {item.description}
                   </p>
-                  
-                  {/* 인쇄 시에는 텍스트 바로 아래에 이미지가 오도록 모바일용 레이아웃의 요소를 재활용하거나 인쇄 전용 표시 */}
-                  <div className="hidden print:flex flex-col items-center w-full mt-10">
-                    <div className="relative w-[280px] aspect-[9/19] bg-white rounded-[2.5rem] border-[4px] border-black overflow-hidden flex flex-col print-phone-frame">
-                      <div className="relative z-30 w-full shrink-0">
-                        <img src={STATUS_BAR_URL} alt="status bar" className="w-full h-auto block bg-white" />
-                      </div>
-                      <div className="relative flex-1 w-full bg-gray-50 overflow-hidden">
-                         <img 
-                            src={item.images[subImageIndices[idx]] || item.images[0]} 
-                            alt={`${item.title}`} 
-                            className="w-full h-full object-cover object-top" 
-                          />
-                      </div>
-                    </div>
-                  </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Right: Phone Frame Area (Desktop View Only - Hidden on Print) */}
-          <div className="flex-none flex flex-col items-center justify-center h-full no-print">
+          {/* Right: Phone Frame Area */}
+          <div className="flex-none flex flex-col items-center justify-center h-full">
             <div className="flex flex-col items-center w-full transform translate-y-[54px]">
               <div className="relative w-full w-[300px] lg:w-[320px] aspect-[9/19] bg-white rounded-[3rem] shadow-[0_40px_100px_rgba(0,0,0,0.12)] border-[8px] border-black overflow-hidden flex flex-col">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-b-3xl z-50"></div>
